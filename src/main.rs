@@ -50,11 +50,9 @@ impl EventHandler for KurokoEventHandler {
                 if splitted.len() <= 1 {
                     Some(messages::NOT_ENOUGH_ARGUMENTS.to_string())
                 } else {
-                    let daggered = if let Some(s) = splitted.get(2) {
+                    let daggered = splitted.get(2).map_or(false, |s| {
                         *s == APPEND_DAGGER_OPTION || *s == APPEND_DAGGER_OPTION_SHORT
-                    } else {
-                        false
-                    };
+                    });
 
                     let arg = if daggered {
                         splitted.get(1).unwrap().to_string()
