@@ -52,7 +52,7 @@ impl EventHandler for KurokoEventHandler {
                 }
 
                 let daggered = if let Some(s) = splitted.get(2) {
-                    *s == "--dagger"
+                    *s == "--dagger" || *s == "-d"
                 } else {
                     false
                 };
