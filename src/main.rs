@@ -81,7 +81,13 @@ impl EventHandler for KurokoEventHandler {
 }
 
 fn send_message_checked(msg: &str, channel_id: ChannelId, http: Arc<Http>) {
-    let result = channel_id.say(&http, msg);
+    let text = if msg.len() >= 2000 {
+        messages::TOO_LONG
+    } else {
+        msg
+    };
+
+    let result = channel_id.say(&http, text);
     if let Err(e) = result {
         println!("{}: {}", messages::MESSAGE_SEND_FAIL, e);
     }
