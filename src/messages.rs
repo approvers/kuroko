@@ -38,7 +38,7 @@ pub struct CheckedMessage {
 
 impl CheckedMessage {
     pub fn new(content: String) -> Result<Self, MessageTooLongError> {
-        if content.len() > DISCORD_MESSAGE_MAX_LENGTH {
+        if content.len() >= DISCORD_MESSAGE_MAX_LENGTH {
             Err(MessageTooLongError(TOO_LONG.into()))
         } else {
             Ok(Self { content })
