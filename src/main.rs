@@ -48,22 +48,47 @@ impl EventHandler for KurokoEventHandler {
             _ => None,
         };
 
-        if let Some(send_text) = text {
-            send_message_checked(&send_text, message.channel_id, ctx.http);
+        if text.is_some() {
+            send_message_checked(text.unwrap(), message.channel_id, ctx.http)
         }
     }
 }
 
-const DISCORD_MESSAGE_MAX_LENGTH: usize = 2000;
-fn send_message_checked(msg: &str, channel_id: ChannelId, http: Arc<Http>) {
-    let text = if msg.len() >= DISCORD_MESSAGE_MAX_LENGTH {
-        messages::TOO_LONG
-    } else {
-        msg
+fn send_message_checked(msg: String, channel_id: ChannelId, http: Arc<Http>) {
+    let checked_message = CheckedMessage::new(msg);
+
+    let send_result = match checked_message {
+        Ok(m) => channel_id.say(&http, m.content()),
+        Err(e) => channel_id.say(&http, e),
     };
 
-    let result = channel_id.say(&http, text);
-    if let Err(e) = result {
+    if let Err(e) = send_result {
         println!("{}: {}", messages::MESSAGE_SEND_FAIL, e);
+    }
+}
+
+const DISCORD_MESSAGE_MAX_LENGTH: usize = 2000;
+struct MessageTooLongError(String);
+impl std::fmt::Display for MessageTooLongError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", &self.0)
+    }
+}
+
+struct CheckedMessage {
+    content: String,
+}
+
+impl CheckedMessage {
+    fn new(content: String) -> Result<Self, MessageTooLongError> {
+        if content.len() > DISCORD_MESSAGE_MAX_LENGTH {
+            Err(MessageTooLongError(messages::TOO_LONG.into()))
+        } else {
+            Ok(Self { content })
+        }
+    }
+
+    fn content(&self) -> &str {
+        &self.content
     }
 }
