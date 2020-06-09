@@ -57,7 +57,14 @@ impl EventHandler for KurokoEventHandler {
                     false
                 };
 
-                let text = messages::ITS_THE_TIME(splitted.get(1).unwrap(), daggered);
+
+                let arg = if daggered {
+                    splitted.get(1).unwrap().to_string()
+                } else {
+                    content.chars().skip("!time".len()).collect::<String>()
+                };
+
+                let text = messages::ITS_THE_TIME(arg.trim(), daggered);
                 send_message_checked(&text, message.channel_id, ctx.http);
             }
 
@@ -71,7 +78,8 @@ impl EventHandler for KurokoEventHandler {
                     return;
                 }
 
-                let text = messages::DESUWA(splitted.get(1).unwrap());
+                let arg = content.chars().skip("!desuwa".len()).collect::<String>();
+                let text = messages::DESUWA(arg.trim());
                 send_message_checked(&text, message.channel_id, ctx.http);
             }
 
