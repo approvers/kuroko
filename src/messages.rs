@@ -1,4 +1,6 @@
-pub const NO_DISCORD_TOKEN: &str = "おﾈｪｻﾏｰｰｰｯｯｯｯｯ!!!!! トークンがございませんのｯｯｯｯｯｯｯ!!!!!";
+pub const NO_DISCORD_TOKEN: &str = "おﾈｪｻﾏｰｰｰｯｯｯｯｯ!!!!! トークンがございませんのｯｯｯｯｯｯｯｯ!!!!!!";
+pub const DISCORD_LAUNCH_FAILED: &str =
+    "おﾈｪｻﾏｰｰｰｯｯｯｯｯ!!!!! Discordに接続できませんのｯｯｯｯｯｯｯｯ!!!!!!";
 pub const READY: &str = "おﾈｪｻﾏｰｰｰｯｯｯｯｯ!!!!! 準備完了ですのｯｯｯｯｯｯｯｯ!!!!!!";
 pub const JUDGEMENT: &str = "ジャッジメントですのっ！";
 pub const MESSAGE_SEND_FAIL: &str = "おﾈｪｻﾏｰｰｰｯｯｯｯｯ!!!!! 発言出来ませんのｯｯｯｯｯｯｯ!!!!!";

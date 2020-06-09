@@ -12,10 +12,15 @@ mod messages;
 fn main() {
     let token = env::var("KUROKO_DISCORD_TOKEN").expect(messages::NO_DISCORD_TOKEN);
 
-    let mut client = Client::new(token, KurokoEventHandler).unwrap();
-    client.start().unwrap();
+    let mut client = Client::new(token, KurokoEventHandler).expect(messages::DISCORD_LAUNCH_FAILED);
+    client.start().expect(messages::DISCORD_LAUNCH_FAILED);
 }
 
+const JUDGEMENT_COMMAND: &str = "!judgement";
+const TIME_COMMAND: &str = "!time";
+const APPEND_DAGGER_OPTION: &str = "--dagger";
+const APPEND_DAGGER_OPTION_SHORT: &str = "-d";
+const DESUWA_COMMAND: &str = "!desuwa";
 struct KurokoEventHandler;
 
 impl EventHandler for KurokoEventHandler {
@@ -32,58 +37,49 @@ impl EventHandler for KurokoEventHandler {
         let splitted = content.split(" ").collect::<Vec<&str>>();
         let first_element = splitted[0];
 
-        match first_element {
-            "!judgement" => {
+        let text = match first_element {
+            JUDGEMENT_COMMAND => {
                 if splitted.len() != 1 {
-                    return;
-                }
-
-                send_message_checked(messages::JUDGEMENT, message.channel_id, ctx.http);
-            }
-
-            "!time" => {
-                if splitted.len() <= 1 {
-                    send_message_checked(
-                        messages::NOT_ENOUGH_ARGUMENTS,
-                        message.channel_id,
-                        ctx.http,
-                    );
-                    return;
-                }
-
-                let daggered = if let Some(s) = splitted.get(2) {
-                    *s == "--dagger" || *s == "-d"
+                    None
                 } else {
-                    false
-                };
-
-
-                let arg = if daggered {
-                    splitted.get(1).unwrap().to_string()
-                } else {
-                    content.chars().skip("!time".len()).collect::<String>()
-                };
-
-                let text = messages::ITS_THE_TIME(arg.trim(), daggered);
-                send_message_checked(&text, message.channel_id, ctx.http);
-            }
-
-            "!desuwa" => {
-                if splitted.len() <= 1 {
-                    send_message_checked(
-                        messages::NOT_ENOUGH_ARGUMENTS,
-                        message.channel_id,
-                        ctx.http,
-                    );
-                    return;
+                    Some(messages::JUDGEMENT.to_string())
                 }
-
-                let arg = content.chars().skip("!desuwa".len()).collect::<String>();
-                let text = messages::DESUWA(arg.trim());
-                send_message_checked(&text, message.channel_id, ctx.http);
             }
 
-            _ => {}
+            TIME_COMMAND => {
+                if splitted.len() <= 1 {
+                    Some(messages::NOT_ENOUGH_ARGUMENTS.to_string())
+                } else {
+                    let daggered = if let Some(s) = splitted.get(2) {
+                        *s == APPEND_DAGGER_OPTION || *s == APPEND_DAGGER_OPTION_SHORT
+                    } else {
+                        false
+                    };
+
+                    let arg = if daggered {
+                        splitted.get(1).unwrap().to_string()
+                    } else {
+                        content.chars().skip(TIME_COMMAND.len()).collect::<String>()
+                    };
+
+                    Some(messages::ITS_THE_TIME(arg.trim(), daggered))
+                }
+            }
+
+            DESUWA_COMMAND => {
+                if splitted.len() <= 1 {
+                    Some(messages::NOT_ENOUGH_ARGUMENTS.to_string())
+                } else {
+                    let arg = content.chars().skip("!desuwa".len()).collect::<String>();
+                    Some(messages::DESUWA(arg.trim()))
+                }
+            }
+
+            _ => None,
+        };
+
+        if let Some(send_text) = text {
+            send_message_checked(&send_text, message.channel_id, ctx.http);
         }
     }
 }
