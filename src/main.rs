@@ -8,6 +8,8 @@ use std::env;
 use std::sync::Arc;
 
 mod messages;
+use messages::CheckedMessage;
+
 mod commands {
     pub mod desuwa;
     pub mod judgement;
@@ -64,31 +66,5 @@ fn send_message_checked(msg: String, channel_id: ChannelId, http: Arc<Http>) {
 
     if let Err(e) = send_result {
         println!("{}: {}", messages::MESSAGE_SEND_FAIL, e);
-    }
-}
-
-const DISCORD_MESSAGE_MAX_LENGTH: usize = 2000;
-struct MessageTooLongError(String);
-impl std::fmt::Display for MessageTooLongError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", &self.0)
-    }
-}
-
-struct CheckedMessage {
-    content: String,
-}
-
-impl CheckedMessage {
-    fn new(content: String) -> Result<Self, MessageTooLongError> {
-        if content.len() > DISCORD_MESSAGE_MAX_LENGTH {
-            Err(MessageTooLongError(messages::TOO_LONG.into()))
-        } else {
-            Ok(Self { content })
-        }
-    }
-
-    fn content(&self) -> &str {
-        &self.content
     }
 }

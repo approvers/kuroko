@@ -23,3 +23,29 @@ pub fn ITS_THE_TIME(text: &str, daggered: bool) -> String {
 pub fn DESUWA(text: &str) -> String {
     format!("{}ですわ！", text)
 }
+
+const DISCORD_MESSAGE_MAX_LENGTH: usize = 2000;
+pub struct MessageTooLongError(String);
+impl std::fmt::Display for MessageTooLongError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", &self.0)
+    }
+}
+
+pub struct CheckedMessage {
+    content: String,
+}
+
+impl CheckedMessage {
+    pub fn new(content: String) -> Result<Self, MessageTooLongError> {
+        if content.len() > DISCORD_MESSAGE_MAX_LENGTH {
+            Err(MessageTooLongError(TOO_LONG.into()))
+        } else {
+            Ok(Self { content })
+        }
+    }
+
+    pub fn content(&self) -> &str {
+        &self.content
+    }
+}
