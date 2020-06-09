@@ -8,6 +8,11 @@ use std::env;
 use std::sync::Arc;
 
 mod messages;
+mod commands {
+    pub mod desuwa;
+    pub mod judgement;
+    pub mod time;
+}
 
 fn main() {
     let token = env::var("KUROKO_DISCORD_TOKEN").expect(messages::NO_DISCORD_TOKEN);
@@ -16,11 +21,6 @@ fn main() {
     client.start().expect(messages::DISCORD_LAUNCH_FAILED);
 }
 
-const JUDGEMENT_COMMAND: &str = "!judgement";
-const TIME_COMMAND: &str = "!time";
-const APPEND_DAGGER_OPTION: &str = "--dagger";
-const APPEND_DAGGER_OPTION_SHORT: &str = "-d";
-const DESUWA_COMMAND: &str = "!desuwa";
 struct KurokoEventHandler;
 
 impl EventHandler for KurokoEventHandler {
@@ -37,41 +37,13 @@ impl EventHandler for KurokoEventHandler {
         let splitted = content.split(" ").collect::<Vec<&str>>();
         let first_element = splitted[0];
 
+        use commands::*;
         let text = match first_element {
-            JUDGEMENT_COMMAND => {
-                if splitted.len() != 1 {
-                    None
-                } else {
-                    Some(messages::JUDGEMENT.to_string())
-                }
-            }
+            judgement::JUDGEMENT_COMMAND => judgement::judgement(&splitted),
 
-            TIME_COMMAND => {
-                if splitted.len() <= 1 {
-                    Some(messages::NOT_ENOUGH_ARGUMENTS.to_string())
-                } else {
-                    let daggered = splitted.get(2).map_or(false, |s| {
-                        *s == APPEND_DAGGER_OPTION || *s == APPEND_DAGGER_OPTION_SHORT
-                    });
+            time::TIME_COMMAND => time::time(&content, &splitted),
 
-                    let arg = if daggered {
-                        splitted.get(1).unwrap().to_string()
-                    } else {
-                        content.chars().skip(TIME_COMMAND.len()).collect::<String>()
-                    };
-
-                    Some(messages::ITS_THE_TIME(arg.trim(), daggered))
-                }
-            }
-
-            DESUWA_COMMAND => {
-                if splitted.len() <= 1 {
-                    Some(messages::NOT_ENOUGH_ARGUMENTS.to_string())
-                } else {
-                    let arg = content.chars().skip("!desuwa".len()).collect::<String>();
-                    Some(messages::DESUWA(arg.trim()))
-                }
-            }
+            desuwa::DESUWA_COMMAND => desuwa::desuwa(&content, &splitted),
 
             _ => None,
         };
@@ -82,8 +54,9 @@ impl EventHandler for KurokoEventHandler {
     }
 }
 
+const DISCORD_MESSAGE_MAX_LENGTH: usize = 2000;
 fn send_message_checked(msg: &str, channel_id: ChannelId, http: Arc<Http>) {
-    let text = if msg.len() >= 2000 {
+    let text = if msg.len() >= DISCORD_MESSAGE_MAX_LENGTH {
         messages::TOO_LONG
     } else {
         msg
